@@ -39,6 +39,11 @@
         display: block;
         background-color: rgba(0, 0, 0, 0.45);
     }
+
+    .pledged {
+        margin-right: 2em;
+
+    }
 </style>
 
 <section id="popularcause" class="bg-gray waypoint-tigger xs-section-padding">
@@ -58,10 +63,10 @@
         </div>
         <!-- .row end -->
     
-        {#if charities !== undefined}
+        
         <ul>
-            {#each charities as charity}
             <div class="row">
+                {#each charities as charity}
                 <div class="col-lg-4 col-md-6">
 
                     {#if isModalOpen === true}
@@ -177,7 +182,7 @@
                             <a href="#" class="xs-post-title xs-mb-30">{charity.title}</a>
         
                             <ul class="xs-list-with-content" style="font-size: 12px;">
-                                <li>
+                                <li class="pledged">
                                     {formatCurrency(charity.pledged)}
                                     <span>Pledged</span>
                                 </li>
@@ -225,13 +230,10 @@
                     </div>
                 <!-- .xs-popular-item END -->
                 </div>
+                {/each}
             </div>
             <!-- .row end -->
-            {/each}
         </ul>
-        {:else}
-        <h5>Data belum tersedia</h5>
-        {/if}
     </div>
 </section>
 

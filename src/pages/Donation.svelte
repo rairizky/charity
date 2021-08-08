@@ -1,18 +1,41 @@
 <script>
+    import router from 'page';
+    import { onMount } from 'svelte';
     import Header from '../components/Header.svelte';
     import Footer from '../components/Footer.svelte';
-    import { charities } from '../data/charities';
+    import Loader from '../components/Loader.svelte';
 
     export let params;
-    let data;
+    let charity, amount, name, email, agree = false;
+    let data = getCharity(params.id)
 
-    function getCharity(id) {
-        return charities.find(function (charity) {
-            return charity.id === parseInt(id);
-        })
+    async function getCharity(id) {
+        const res = await fetch(`https://charity-api-bwa.herokuapp.com/charities/${id}`);
+        const data =  res.json();
+
+        if(res.ok) {
+            return data;
+        } else {
+            throw new Error(data);
+        }
     }
 
-    data = getCharity(params.id)
+    async function handleForm() {
+        charity.pledged = charity.pledged + parseInt(amount);
+        try {
+            const res = await fetch(`https://charity-api-bwa.herokuapp.com/charities/${params.id}`, {
+                method: 'PUT',
+                headers: {
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify(charity)
+            });
+            // redirect success
+            router.redirect('/success');
+        } catch (err) {
+            console.log(err);
+        }
+    }
 </script>
 
 <style>
@@ -37,7 +60,9 @@
 
 <Header />
 
-{#if data}
+{#await data}
+    <Loader />
+{:then charity}
     <section
         class="xs-banner-inner-section parallax-window"
         style="background-image:url('/assets/images/backgrounds/kat-yukawa-K0E6E0a0R3A-unsplash.jpg')">
@@ -45,7 +70,7 @@
         <div class="container">
         <div class="color-white xs-inner-banner-content">
             <h2>Donate Now</h2>
-            <p>{data.title}</p>
+            <p>{charity.title}</p>
             <ul class="xs-breadcumb">
             <li class="badge badge-pill badge-primary">
                 <a href="/" class="color-white">Home /</a>
@@ -65,7 +90,7 @@
             <div class="col-lg-6">
                 <div class="xs-donation-form-images">
                 <img
-                    src={data.thumbnail}
+                    src={charity.thumbnail}
                     class="img-responsive"
                     alt="Family Images" />
                 </div>
@@ -73,7 +98,7 @@
             <div class="col-lg-6">
                 <div class="xs-donation-form-wraper">
                 <div class="xs-heading xs-mb-30">
-                    <h2 class="xs-title">{data.title}</h2>
+                    <h2 class="xs-title">{charity.title}</h2>
                     <p class="small">
                     To learn more about make donate charity with us visit our "
                     <span class="color-green">Contact us</span>
@@ -85,61 +110,71 @@
                 </div>
                 <!-- .xs-heading end -->
                 <form
+                    on:submit|preventDefault={handleForm}
                     action="#"
                     method="post"
                     id="xs-donation-form"
                     class="xs-donation-form"
                     name="xs-donation-form">
                     <div class="xs-input-group">
-                    <label for="xs-donate-name">
-                        Donation Amount
-                        <span class="color-light-red">**</span>
-                    </label>
-                    <input
-                        type="text"
-                        name="amount"
-                        id="xs-donate-amount"
-                        class="form-control"
-                        placeholder="Minimum of $5" />
+                        <label for="xs-donate-name">
+                            Donation Amount
+                            <span class="color-light-red">**</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="amount"
+                            id="xs-donate-amount"
+                            class="form-control"
+                            bind:value={amount}
+                            required='true'
+                            autocomplete='off'
+                            placeholder="Your Donation in Rupiah" />
                     </div>
                     <!-- .xs-input-group END -->
                     <div class="xs-input-group">
-                    <label for="xs-donate-name">
-                        Your Name
-                        <span class="color-light-red">**</span>
-                    </label>
-                    <input
-                        type="text"
-                        name="name"
-                        id="xs-donate-name"
-                        class="form-control"
-                        placeholder="Your awesome name" />
+                        <label for="xs-donate-name">
+                            Your Name
+                            <span class="color-light-red">**</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="name"
+                            id="xs-donate-name"
+                            class="form-control"
+                            bind:value={name}
+                            required='true'
+                            autocomplete='off'
+                            placeholder="Your awesome name" />
                     </div>
                     <div class="xs-input-group">
-                    <label for="xs-donate-email">
-                        Your Email
-                        <span class="color-light-red">**</span>
-                    </label>
-                    <input
-                        type="email"
-                        name="email"
-                        id="xs-donate-email"
-                        class="form-control"
-                        placeholder="email@awesome.com" />
+                        <label for="xs-donate-email">
+                            Your Email
+                            <span class="color-light-red">**</span>
+                        </label>
+                        <input
+                            type="email"
+                            name="email"
+                            id="xs-donate-email"
+                            class="form-control"
+                            bind:value={email}
+                            required='true'
+                            autocomplete='off'
+                            placeholder="email@awesome.com" />
                     </div>
                     <div class="xs-input-group" id="xs-input-checkbox">
-                    <input type="checkbox" name="agree" id="xs-donate-agree" />
-                    <label for="xs-donate-agree">
-                        I Agree
-                        <span class="color-light-red">**</span>
-                    </label>
+                        <input type="checkbox" bind:checked={agree} name="agree" id="xs-donate-agree" />
+                        <label for="xs-donate-agree">
+                            I Agree
+                            <span class="color-light-red">**</span>
+                        </label>
                     </div>
                     <!-- .xs-input-group END -->
-                    <button type="submit" class="btn btn-warning">
-                    <span class="badge">
-                        <i class="fa fa-heart" />
-                    </span>
-                    Donate now
+                    <button type="submit" disabled={!agree} class="btn btn-warning">
+                        <span class="badge">
+                            <i class="fa fa-heart" />
+                        </span>
+                        Donate now
                     </button>
                 </form>
                 <!-- .xs-donation-form #xs-donation-form END -->
@@ -152,6 +187,6 @@
         </section>
         <!-- End donation form section -->
     </main>
-{/if}
+{/await}
 
 <Footer />
