@@ -7,17 +7,11 @@
 
     export let params;
     let charity, amount, name, email, agree = false;
-    let data = getCharity(params.id)
+    let data = getCharity(params.id);
 
     async function getCharity(id) {
         const res = await fetch(`https://charity-api-bwa.herokuapp.com/charities/${id}`);
-        const data =  res.json();
-
-        if(res.ok) {
-            return data;
-        } else {
-            throw new Error(data);
-        }
+        return res.json();
     }
 
     async function handleForm() {
@@ -30,6 +24,7 @@
                 },
                 body: JSON.stringify(charity)
             });
+            console.log(res);
             // redirect success
             router.redirect('/success');
         } catch (err) {
