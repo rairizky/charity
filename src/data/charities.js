@@ -5,7 +5,7 @@ module.exports = {
             title: 'First Charity Project',
             category: 'Money',
             thumbnail: 'https://picsum.photos/400',
-            pledged: 0,
+            pledged: 50000,
             target: 100000,
             date_end: +new Date('31 August 2021'),
             profile_photo: 'https://i.pravatar.cc/300',
